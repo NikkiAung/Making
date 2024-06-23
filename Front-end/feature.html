@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+    <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+</head>
+<body>
+    <div class="main-container">
+        <div class="sub-container-1">
+            <img class="go-green-img" src="./images/Screenshot 2024-06-23 at 6.26.28 AM.png" alt="go-green-img" id="go-green-img">
+        </div>
+        <div id="display"></div>
+
+        <div class="sub-container-2">
+            <textarea class="recipe-generator-box" placeholder="Recipe gonna be generated" id="recipe-box"></textarea>
+        </div>
+    </div>
+
+    <py-script>
+        from js import document
+        from pyodide.ffi import create_proxy
+        <!-- import pyodide -->
+
+        def debugFunc(event):
+            display = document.getElementById('display')
+            display.innerHTML = "Button clicked"
+            print("Button clicked!!")
+            display.innerHTML = "Hello from PyScript!"
+        
+        btn = document.getElementById("btn")
+        btn.addEventListener("click", create_proxy(debugFunc))
+
+        def run_detection(event):
+            import cv2
+            import json
+            import supervision as sv
+            from ultralytics import YOLOv8
+
+            # Load the model
+            model = YOLOv8('/path/to/your/model/best.pt')
+
+            # Initialize annotators
+            bounding_box_annotator = sv.BoundingBoxAnnotator()
+            label_annotator = sv.LabelAnnotator()
+
+            # Open the webcam
+            cap = cv2.VideoCapture(0)
+
+            if not cap.isOpened():
+                print("Unable to read camera feed")
+                return
+
+            # Counter for image frames
+            img_counter = 0
+
+            # List to hold detection results
+            detection_results = []
+
+            while True:
+                ret, frame = cap.read()
+                if not ret:
+                    break
+
+                # Run detection
+                results = model(frame, conf=0.25)[0]
+                detections = sv.Detections.from_ultralytics(results)
+
+                # Annotate the frame
+                annotated_image = bounding_box_annotator.annotate(scene=frame, detections=detections)
+                annotated_image = label_annotator.annotate(scene=annotated_image, detections=detections)
+
+                # Display the annotated frame
+                cv2.imshow('Webcam', annotated_image)
+
+                # Save detections to JSON without duplicates
+                detected_labels = set()
+                for detection in detections:
+                    label = tuple(detection[5])  # Convert label dict to a tuple
+
+                    if label not in detected_labels:
+                        detection_data = {
+                            'label': detection[5]  # Use the original dict for saving
+                        }
+                        detection_results.append(detection_data)
+                        detected_labels.add(label)
+
+                # Handle key events
+                k = cv2.waitKey(1)
+
+                if k % 256 == 27:
+                    print("Escape hit, closing...")
+                    break
+
+                img_counter += 1
+
+            # Release the camera and close windows
+            cap.release()
+            cv2.destroyAllWindows()
+
+            # Save the detection results to a JSON file
+            with open('detection_results.json', 'w') as json_file:
+                json.dump(detection_results, json_file, indent=4)
+
+            print("Detections saved to detection_results.json")
+
+        # Attach the function to the click event of the image
+        img = document.getElementById('go-green-img')
+        img.addEventListener('click', run_detection)
+
+    </py-script>
+</body>
+</html>

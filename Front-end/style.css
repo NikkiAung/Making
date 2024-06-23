@@ -1,0 +1,81 @@
+*{
+    font-family: Arial sans-serif;
+}
+.profile{
+    width: 200px;
+    height: 200px;
+}
+.banner {
+    width: 100%;
+    height: 100vh;
+    text-align: center;
+    overflow: hidden;
+    position: relative;
+}
+
+.banner .slider{
+    position: absolute;
+    width: 200px;
+    height: 250px;
+    top: 10%;
+    left: calc(50% - 100px);
+    transform-style: preserve-3d;
+    transform: perspective(1000px);
+    animation: autoRun 20s linear infinite;
+}
+
+@keyframes autoRun {
+    from {
+        transform: perspective(1000px) rotateX(-16deg) rotateY(0deg);
+    }to{
+        transform: perspective(1000px) rotateX(-16deg) rotateY(360deg);
+    }
+}
+
+.banner .slider .item{
+    position: absolute;
+    inset: 0;
+    transform: 
+        rotateY(calc((var(--position) - 1) * (360deg / var(--quantity)) * 1))
+        translateZ(550px);
+}
+
+.banner .slider .item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.banner .content .model{
+    background-image: url(images/bigbear\ \(1\).svg);
+    width: 120%;
+    height: 40vh;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    background-size: auto 130%;
+    background-repeat: no-repeat;
+    background-position: top center;
+}
+
+.main-container {
+    text-align: center;
+}
+
+.go-green-img{
+    width: 300px;
+}
+
+.sub-container-1{
+    margin-bottom: 30px;
+}
+
+.recipe-generator-box{
+    padding: 10px 10px;
+    width: 500px;
+    height: auto;
+    font-size: 20px;
+    border-radius: 20px;
+    border: none;
+    box-shadow: 2px 5px 10px rgba(0, 0, 0, 0.2);
+}
